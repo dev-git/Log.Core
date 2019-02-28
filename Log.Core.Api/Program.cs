@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SQLite;
+using Microsoft.Data.Sqlite;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -24,11 +24,11 @@ namespace Log.Core.Api
 
         private static void CreateDb()
         {
-            string connectionStr = @"Data Source=logcore.db;Version=3;";
-            SQLiteConnection connection = new SQLiteConnection(connectionStr);
+            string connectionStr = @"Data Source=logcore.db;";
+            SqliteConnection connection = new SqliteConnection(connectionStr);
             connection.Open();
 
-            SQLiteCommand cmd = connection.CreateCommand();
+            SqliteCommand cmd = connection.CreateCommand();
 
             // Check if table exists
             var tableStr = "select * from sqlite_master where type = 'table' and name = 'LogDetail';";

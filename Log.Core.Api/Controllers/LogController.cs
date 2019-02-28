@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.SQLite;
+using Microsoft.Data.Sqlite;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Cors;
@@ -18,32 +18,34 @@ namespace Log.Core.Api.Controllers
         [HttpGet]
         public IEnumerable<Models.LogDetail> Get()
         {
-            string connectionStr = @"Data Source=logcore.db;Version=3;";
-            SQLiteConnection connection = new SQLiteConnection(connectionStr);
+
+            string connectionStr = @"Data Source=logcore.db;";
+            SqliteConnection connection = new SqliteConnection(connectionStr);
             connection.Open();
 
-            SQLiteCommand cmd = connection.CreateCommand();
+            SqliteCommand cmd = connection.CreateCommand();
 
             string selectStr = "select logdetail_pk, logdetail_macaddress, logdetail_latitude, " +
-                "logdetail_longtitude, logdetail_batterylevel, datetime(when_created, 'localtime') as when_created from LogDetail order by logdetail_pk desc;";
+                "logdetail_longtitude, logdetail_batterylevel, datetime(when_created, 'localtime') as when_created " +
+                "from LogDetail order by logdetail_pk desc;";
 
             cmd.CommandType = System.Data.CommandType.Text;
             cmd.CommandText = selectStr;
 
-            SQLiteDataReader dr = cmd.ExecuteReader();
-            System.Data.DataTable dt = new System.Data.DataTable();
-            dt.Load(dr);
+            SqliteDataReader dr = cmd.ExecuteReader();
+            //System.Data.DataTable dt = new System.Data.DataTable();
+            //dt.Load(dr);
 
             List<Models.LogDetail> logDetailList = new List<Models.LogDetail>();
-            foreach (System.Data.DataRow drow in dt.Rows)
-            {
-                Console.WriteLine(drow[0].ToString());
+            while (dr.Read())
+            { 
+                Console.WriteLine(dr[0].ToString());
                 Models.LogDetail logDetail = new Models.LogDetail();
-                logDetail.MACAddress = drow["logdetail_macaddress"].ToString();
-                logDetail.Latitude = Double.Parse(drow["logdetail_latitude"].ToString());
-                logDetail.Longitude = Double.Parse(drow["logdetail_longtitude"].ToString());
-                logDetail.BatteryLevel = Int32.Parse(drow["logdetail_batterylevel"].ToString());
-                logDetail.WhenCreated = DateTime.Parse(drow["when_created"].ToString());
+                logDetail.MACAddress = dr[1].ToString();
+                logDetail.Latitude = Double.Parse(dr[2].ToString());
+                logDetail.Longitude = Double.Parse(dr[3].ToString());
+                logDetail.BatteryLevel = Int32.Parse(dr[4].ToString());
+                logDetail.WhenCreated = DateTime.Parse(dr[5].ToString());
 
                 logDetailList.Add(logDetail);
             }
@@ -78,11 +80,11 @@ namespace Log.Core.Api.Controllers
 
             var log = Newtonsoft.Json.JsonConvert.DeserializeObject<Models.LogDetail>(value);
 
-            string connectionStr = @"Data Source=logcore.db;Version=3;";
-            SQLiteConnection connection = new SQLiteConnection(connectionStr);
+            string connectionStr = @"Data Source=logcore.db;";
+            SqliteConnection connection = new SqliteConnection(connectionStr);
             connection.Open();
 
-            SQLiteCommand cmd = connection.CreateCommand();
+            SqliteCommand cmd = connection.CreateCommand();
 
             string tableStr = String.Format("insert into LogDetail (logdetail_macaddress, logdetail_latitude, logdetail_longtitude, logdetail_batterylevel) " +
                     "values ('{0}', {1}, {2}, {3})", log.MACAddress, log.Latitude, log.Longitude, log.BatteryLevel);
